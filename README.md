@@ -1,5 +1,11 @@
 # AWS EKS Infrastructure Project
 
+[![Release](https://img.shields.io/github/v/release/bharats487/aws-ek-app-without-domain)](https://github.com/bharats487/aws-ek-app-without-domain/releases)
+[![License](https://img.shields.io/github/license/bharats487/aws-ek-app-without-domain?color=blue)](LICENSE)
+[![AWS](https://img.shields.io/badge/AWS-EKS-orange)](https://aws.amazon.com/eks/)
+[![Terraform](https://img.shields.io/badge/Terraform-1.2+-blueviolet)](https://www.terraform.io/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.28-blue)](https://kubernetes.io/)
+
 This project contains Infrastructure as Code (IaC) for deploying a Kubernetes cluster on AWS using Amazon EKS (Elastic Kubernetes Service).
 
 **GitHub Repository**: [aws-ek-app-without-domain](https://github.com/bharats487/aws-ek-app-without-domain)
@@ -152,3 +158,7 @@ terraform destroy -var-file=existing-vpc.tfvars
 - If nodes fail to join the cluster, check the VPC subnets and security group configurations
 - For Load Balancer issues, check the ALB Controller logs in the kube-system namespace
 - For authorization issues, verify IAM roles and aws-auth ConfigMap configuration 
+
+## Keywords
+
+aws, eks, kubernetes, terraform, infrastructure-as-code, devops, alb, containers, aws-load-balancer, k8s, iac, aws-eks, eks-cluster, terraform-aws-modules, aws-application-load-balancer, aws-alb-controller, eks-managed-node-group, kubernetes-deployment, aws-vpc, aws-security-groups, aws-iam-roles, aws-kms 
