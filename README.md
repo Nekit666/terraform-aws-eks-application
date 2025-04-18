@@ -2,6 +2,8 @@
 
 This project contains Infrastructure as Code (IaC) for deploying a Kubernetes cluster on AWS using Amazon EKS (Elastic Kubernetes Service).
 
+**GitHub Repository**: [aws-ek-app-without-domain](https://github.com/bharats487/aws-ek-app-without-domain)
+
 ## Architecture Overview
 
 The infrastructure includes:
