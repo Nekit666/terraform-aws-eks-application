@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: default # Match deployment namespace
+  labels:
+    app: backend
+spec:
+  selector:
+    app: backend # Selects pods with label app=backend
+  ports:
+    - protocol: TCP
+      port: 80 # Port the service will listen on within the cluster
+      targetPort: 8080 # Port the backend container listens on
+  type: ClusterIP # Only exposes the service internally within the cluster
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: default # Match deployment namespace
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend # Selects pods with label app=frontend
+  ports:
+    - protocol: TCP
+      port: 80 # Port the service will listen on
+      targetPort: 80 # Port the frontend container listens on
+  type: ClusterIP # Expose via Ingress 

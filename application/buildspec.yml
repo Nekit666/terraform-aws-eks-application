@@ -1,0 +1,84 @@
+version: 0.2
+
+env:
+  variables:
+    # Set these in CodeBuild project environment variables or fetch dynamically
+    # AWS_ACCOUNT_ID: "ACCOUNT_ID"
+    # AWS_DEFAULT_REGION: "REGION"
+    # ECR_BACKEND_REPO_URI: "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/justeasylearn/backend"
+    # ECR_FRONTEND_REPO_URI: "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/justeasylearn/frontend"
+    IMAGE_TAG: "latest" # Default tag, can be overridden (e.g., with commit hash)
+  parameter-store:
+    # Optionally fetch sensitive data like DB creds from Parameter Store if needed during build
+    # DB_PASSWORD: "/myapplication/db_password"
+
+phases:
+  install:
+    runtime-versions:
+      docker: 18 # Specify Docker runtime if needed
+      nodejs: 18 # Match Node.js version used in Dockerfile
+    commands:
+      - echo "Install phase..."
+      # Install kubectl for potential later use (e.g., generating manifests)
+      - curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.5/2024-01-04/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/kubectl
+      - kubectl version --client
+
+  pre_build:
+    commands:
+      - echo "Pre-build phase..."
+      - echo "Logging in to Amazon ECR..."
+      - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:-latest} # Use commit hash if available, else latest
+      # Retrieve AWS Account ID and Region dynamically
+      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - AWS_DEFAULT_REGION=$(aws configure get region)
+      # Construct ECR URIs (Ensure ECR repo names match Terraform)
+      - ECR_BACKEND_REPO_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/justeasylearn/backend"
+      - ECR_FRONTEND_REPO_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/justeasylearn/frontend"
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo "Using IMAGE_TAG=${IMAGE_TAG}"
+      - echo "Using COMMIT_HASH=${COMMIT_HASH}"
+      - echo "Backend ECR URI: ${ECR_BACKEND_REPO_URI}"
+      - echo "Frontend ECR URI: ${ECR_FRONTEND_REPO_URI}"
+
+  build:
+    commands:
+      - echo "Build phase started on `date`"
+      # Build Backend Image
+      - echo "Building backend image..."
+      - docker build --target final-backend -t $ECR_BACKEND_REPO_URI:$IMAGE_TAG -t $ECR_BACKEND_REPO_URI:$COMMIT_HASH -f Dockerfile .
+      # Build Frontend Image
+      - echo "Building frontend image..."
+      - docker build --target final-frontend -t $ECR_FRONTEND_REPO_URI:$IMAGE_TAG -t $ECR_FRONTEND_REPO_URI:$COMMIT_HASH -f Dockerfile .
+
+  post_build:
+    commands:
+      - echo "Post-build phase started on `date`"
+      # Push Backend Image
+      - echo "Pushing backend image to ECR..."
+      - docker push $ECR_BACKEND_REPO_URI:$IMAGE_TAG
+      - docker push $ECR_BACKEND_REPO_URI:$COMMIT_HASH
+      # Push Frontend Image
+      - echo "Pushing frontend image to ECR..."
+      - docker push $ECR_FRONTEND_REPO_URI:$IMAGE_TAG
+      - docker push $ECR_FRONTEND_REPO_URI:$COMMIT_HASH
+      # Prepare artifacts for deployment stage
+      - echo "Preparing imagedefinitions.json artifact..."
+      # Create a file containing image definitions for CodeDeploy/CodeBuild deploy stage
+      # This standard format can be used by CodeDeploy or parsed by a script in CodeBuild
+      - printf '[{"name":"backend-container","imageUri":"%s"},{"name":"frontend-container","imageUri":"%s"}]' $ECR_BACKEND_REPO_URI:$COMMIT_HASH $ECR_FRONTEND_REPO_URI:$COMMIT_HASH > imagedefinitions.json
+      - echo "Build completed on `date`"
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    # Include k8s manifests if the deploy stage needs them directly
+    # - k8s/**/*
+  # discard-paths: yes
+
+cache:
+  paths:
+    - '/root/.cache/pip'
+    - '/root/.docker/**/*' # Cache Docker layers 

@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: default # Or your target namespace
+  labels:
+    app: backend
+spec:
+  replicas: 2 # Adjust replica count as needed
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend-container # Keep this name consistent if you add CI/CD later
+        # Replace with your actual image URI after building and pushing
+        image: node:18-alpine # Placeholder - simple public Node image
+        # image: YOUR_ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/justeasylearn/backend:latest # Example ECR URI
+        ports:
+        - containerPort: 8080 # Match the port exposed by your backend app (from src/index.ts)
+        # env: # Temporarily removed DB env vars
+          # Define environment variables for the backend
+          # Option 1: Directly (less secure for secrets)
+          # - name: DB_HOST
+          #   value: "your-rds-endpoint" 
+          # Option 2: From Kubernetes Secrets (Recommended for sensitive data)
+          # - name: DB_USER
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: db-credentials # Name of the K8s secret
+          #       key: username
+          # - name: DB_PASSWORD
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: db-credentials
+          #       key: password
+          # - name: DB_NAME
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: db-credentials
+          #       key: dbname
+          # - name: DB_HOST
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: db-credentials
+          #       key: host
+          # - name: PORT
+          #   value: "8080"
+        # Add readiness and liveness probes
+        # Ensure the image used actually runs a server on port 8080 and exposes /health
+        # The default node:18-alpine image needs your app code added to run properly
+        readinessProbe:
+          httpGet:
+            path: /health # Use the health check endpoint defined in backend/src/index.ts
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          failureThreshold: 3
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: default # Or your target namespace
+  labels:
+    app: frontend
+spec:
+  replicas: 2 # Adjust replica count as needed
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend-container # Keep this name consistent
+        # Replace with your actual image URI after building and pushing
+        image: nginx:1.25-alpine # Placeholder - public nginx image
+        # image: YOUR_ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/justeasylearn/frontend:latest # Example ECR URI
+        ports:
+        - containerPort: 80 # Match the port exposed by nginx
+        # Add readiness and liveness probes for nginx
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10 
